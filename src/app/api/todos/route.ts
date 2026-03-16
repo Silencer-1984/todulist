@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { join } from 'path'
 import { writeFile, mkdir } from 'fs/promises'
@@ -13,14 +15,19 @@ async function ensureUploadDir() {
   }
 }
 
-// GET /api/todos - 获取所有 Todo
+// GET /api/todos - 获取当前用户的所有 Todo
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 })
+    }
+
     const { searchParams } = new URL(request.url)
     const completed = searchParams.get('completed')
     const priority = searchParams.get('priority')
 
-    const where: any = {}
+    const where: any = { userId: session.user.id }
     if (completed !== null) where.completed = completed === 'true'
     if (priority !== null) where.priority = parseInt(priority)
 
@@ -42,6 +49,11 @@ export async function GET(request: NextRequest) {
 // POST /api/todos - 创建新 Todo（支持图片上传）
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 })
+    }
+
     await ensureUploadDir()
     
     const contentType = request.headers.get('content-type') || ''
@@ -115,6 +127,7 @@ export async function POST(request: NextRequest) {
 
     const todo = await prisma.todo.create({
       data: {
+        userId: session.user.id,
         title: title.trim(),
         description: description?.trim() || null,
         priority,

@@ -3,25 +3,151 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Todoist Brand Colors */
+  --td-red: #DC4C3E;
+  --td-red-hover: #B03A2E;
+  --td-bg: #FFFFFF;
+  --td-bg-secondary: #FAFAFA;
+  --td-bg-sidebar: #F7F7F7;
+  --td-text: #202020;
+  --td-text-secondary: #666666;
+  --td-text-muted: #999999;
+  --td-border: #E0E0E0;
+  --td-border-light: #EEEEEE;
+  
+  /* Priority Colors */
+  --td-p1: #FF4D4D;
+  --td-p2: #FF9F1A;
+  --td-p3: #4D96FF;
+  --td-p4: #808080;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--td-text);
+  background: var(--td-bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C1C1C1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #A8A8A8;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.4s ease-out;
+}
+
+/* Todoist Button Styles */
+.btn-td-primary {
+  background: var(--td-red);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-td-primary:hover {
+  background: var(--td-red-hover);
+}
+
+.btn-td-secondary {
+  background: white;
+  color: var(--td-text);
+  border: 1px solid var(--td-border);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-td-secondary:hover {
+  background: var(--td-bg-secondary);
+}
+
+/* Input Styles */
+.input-td {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--td-border);
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.input-td:focus {
+  border-color: var(--td-red);
+  box-shadow: 0 0 0 3px rgba(220, 76, 62, 0.1);
+}
+
+/* Task Checkbox */
+.task-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--td-border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.task-checkbox:hover {
+  border-color: var(--td-red);
+}
+
+.task-checkbox.checked {
+  background: var(--td-red);
+  border-color: var(--td-red);
+}
+
+/* Priority Indicators */
+.priority-p1 { color: var(--td-p1); }
+.priority-p2 { color: var(--td-p2); }
+.priority-p3 { color: var(--td-p3); }
+.priority-p4 { color: var(--td-p4); }
+
+.bg-priority-p1 { background: var(--td-p1); }
+.bg-priority-p2 { background: var(--td-p2); }
+.bg-priority-p3 { background: var(--td-p3); }
+.bg-priority-p4 { background: var(--td-p4); }

@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { Todo } from '@prisma/client'
-import { Typography, ConfigProvider, Switch, Space, theme } from 'antd'
-import { SunOutlined, MoonOutlined } from '@ant-design/icons'
+import { Typography, ConfigProvider, Switch, Space, theme, Button, Avatar } from 'antd'
+import { SunOutlined, MoonOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons'
+import { signOut, useSession } from 'next-auth/react'
 import TodoList from './TodoList'
 import zhCN from 'antd/es/locale/zh_CN'
 import dayjs from 'dayjs'
@@ -19,6 +20,7 @@ interface TodoPageProps {
 }
 
 export default function TodoPage({ initialTodos }: TodoPageProps) {
+  const { data: session } = useSession()
   const [isDarkMode, setIsDarkMode] = useState(false)
 
   // 从 localStorage 读取主题设置
@@ -54,7 +56,7 @@ export default function TodoPage({ initialTodos }: TodoPageProps) {
         }}
       >
         <div style={{ maxWidth: 800, margin: '0 auto' }}>
-          {/* 头部：标题 + 主题切换 */}
+          {/* 头部：标题 + 用户信息 + 主题切换 + 登出 */}
           <div style={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
@@ -74,6 +76,15 @@ export default function TodoPage({ initialTodos }: TodoPageProps) {
             </Title>
             
             <Space>
+              {/* 用户信息 */}
+              <Space>
+                <Avatar icon={<UserOutlined />} />
+                <span style={{ color: isDarkMode ? '#fff' : '#1a1a1a' }}>
+                  {session?.user?.username || '用户'}
+                </span>
+              </Space>
+
+              {/* 主题切换 */}
               <SunOutlined style={{ color: isDarkMode ? '#8c8c8c' : '#faad14' }} />
               <Switch
                 checked={isDarkMode}
@@ -82,6 +93,16 @@ export default function TodoPage({ initialTodos }: TodoPageProps) {
                 unCheckedChildren={<SunOutlined />}
               />
               <MoonOutlined style={{ color: isDarkMode ? '#722ed1' : '#8c8c8c' }} />
+
+              {/* 登出按钮 */}
+              <Button 
+                type="primary" 
+                danger 
+                icon={<LogoutOutlined />}
+                onClick={() => signOut({ callbackUrl: '/login' })}
+              >
+                退出
+              </Button>
             </Space>
           </div>
 

@@ -1,12 +1,16 @@
-import { prisma } from '@/lib/prisma'
-import TodoPage from '@/components/TodoPage'
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import LandingPage from '@/components/LandingPage';
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const todos = await prisma.todo.findMany({
-    orderBy: { createdAt: 'desc' },
-  })
+  const session = await getServerSession(authOptions);
 
-  return <TodoPage initialTodos={todos} />
+  if (session?.user?.id) {
+    redirect('/todos');
+  }
+
+  return <LandingPage />;
 }

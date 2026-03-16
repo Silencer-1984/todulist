@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // GET /api/todos/[id] - 获取单个 Todo
@@ -7,6 +9,11 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 })
+    }
+
     const id = parseInt(params.id)
     if (isNaN(id)) {
       return NextResponse.json(
@@ -26,6 +33,14 @@ export async function GET(
       )
     }
 
+    // 检查是否属于当前用户
+    if (todo.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: '无权访问' },
+        { status: 403 }
+      )
+    }
+
     return NextResponse.json({ todo })
   } catch (error) {
     return NextResponse.json(
@@ -41,11 +56,35 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 })
+    }
+
     const id = parseInt(params.id)
     if (isNaN(id)) {
       return NextResponse.json(
         { error: '无效的 ID' },
         { status: 400 }
+      )
+    }
+
+    // 先查询验证所有权
+    const existingTodo = await prisma.todo.findUnique({
+      where: { id },
+    })
+
+    if (!existingTodo) {
+      return NextResponse.json(
+        { error: 'Todo 不存在' },
+        { status: 404 }
+      )
+    }
+
+    if (existingTodo.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: '无权修改' },
+        { status: 403 }
       )
     }
 
@@ -85,11 +124,35 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 })
+    }
+
     const id = parseInt(params.id)
     if (isNaN(id)) {
       return NextResponse.json(
         { error: '无效的 ID' },
         { status: 400 }
+      )
+    }
+
+    // 先查询验证所有权
+    const existingTodo = await prisma.todo.findUnique({
+      where: { id },
+    })
+
+    if (!existingTodo) {
+      return NextResponse.json(
+        { error: 'Todo 不存在' },
+        { status: 404 }
+      )
+    }
+
+    if (existingTodo.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: '无权删除' },
+        { status: 403 }
       )
     }
 
