@@ -1,176 +1,80 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { TodoController } from '@/server/controllers/todo.controller'
 
-// GET /api/todos/[id] - 获取单个 Todo
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: '未登录' }, { status: 401 })
-    }
-
-    const id = parseInt(params.id)
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: '无效的 ID' },
-        { status: 400 }
-      )
-    }
-
-    const todo = await prisma.todo.findUnique({
-      where: { id },
-    })
-
-    if (!todo) {
-      return NextResponse.json(
-        { error: 'Todo 不存在' },
-        { status: 404 }
-      )
-    }
-
-    // 检查是否属于当前用户
-    if (todo.userId !== session.user.id) {
-      return NextResponse.json(
-        { error: '无权访问' },
-        { status: 403 }
-      )
-    }
-
-    return NextResponse.json({ todo })
-  } catch (error) {
-    return NextResponse.json(
-      { error: '获取 Todo 失败' },
-      { status: 500 }
-    )
-  }
+interface RouteParams {
+  params: { id: string }
 }
 
-// PATCH /api/todos/[id] - 更新 Todo
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: '未登录' }, { status: 401 })
-    }
-
-    const id = parseInt(params.id)
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: '无效的 ID' },
-        { status: 400 }
-      )
-    }
-
-    // 先查询验证所有权
-    const existingTodo = await prisma.todo.findUnique({
-      where: { id },
+/**
+ * GET /api/todos/:id - 获取单个 Todo
+ */
+export async function GET(request: NextRequest, { params }: RouteParams) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user?.id) {
+    return new Response(JSON.stringify({ error: '未登录' }), { 
+      status: 401,
+      headers: { 'Content-Type': 'application/json' }
     })
-
-    if (!existingTodo) {
-      return NextResponse.json(
-        { error: 'Todo 不存在' },
-        { status: 404 }
-      )
-    }
-
-    if (existingTodo.userId !== session.user.id) {
-      return NextResponse.json(
-        { error: '无权修改' },
-        { status: 403 }
-      )
-    }
-
-    const body = await request.json()
-    const { title, description, completed, priority, dueDate } = body
-
-    const updateData: any = {}
-    if (title !== undefined) updateData.title = title
-    if (description !== undefined) updateData.description = description
-    if (completed !== undefined) updateData.completed = completed
-    if (priority !== undefined) updateData.priority = priority
-    if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null
-
-    const todo = await prisma.todo.update({
-      where: { id },
-      data: updateData,
-    })
-
-    return NextResponse.json({ todo })
-  } catch (error: any) {
-    if (error.code === 'P2025') {
-      return NextResponse.json(
-        { error: 'Todo 不存在' },
-        { status: 404 }
-      )
-    }
-    return NextResponse.json(
-      { error: '更新 Todo 失败' },
-      { status: 500 }
-    )
   }
+
+  const id = parseInt(params.id)
+  if (isNaN(id)) {
+    return new Response(JSON.stringify({ error: '无效的 ID' }), { 
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
+
+  return TodoController.getTodoById(id, session.user.id)
 }
 
-// DELETE /api/todos/[id] - 删除 Todo
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: '未登录' }, { status: 401 })
-    }
-
-    const id = parseInt(params.id)
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: '无效的 ID' },
-        { status: 400 }
-      )
-    }
-
-    // 先查询验证所有权
-    const existingTodo = await prisma.todo.findUnique({
-      where: { id },
+/**
+ * PATCH /api/todos/:id - 更新 Todo
+ */
+export async function PATCH(request: NextRequest, { params }: RouteParams) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user?.id) {
+    return new Response(JSON.stringify({ error: '未登录' }), { 
+      status: 401,
+      headers: { 'Content-Type': 'application/json' }
     })
-
-    if (!existingTodo) {
-      return NextResponse.json(
-        { error: 'Todo 不存在' },
-        { status: 404 }
-      )
-    }
-
-    if (existingTodo.userId !== session.user.id) {
-      return NextResponse.json(
-        { error: '无权删除' },
-        { status: 403 }
-      )
-    }
-
-    await prisma.todo.delete({
-      where: { id },
-    })
-
-    return NextResponse.json({ success: true })
-  } catch (error: any) {
-    if (error.code === 'P2025') {
-      return NextResponse.json(
-        { error: 'Todo 不存在' },
-        { status: 404 }
-      )
-    }
-    return NextResponse.json(
-      { error: '删除 Todo 失败' },
-      { status: 500 }
-    )
   }
+
+  const id = parseInt(params.id)
+  if (isNaN(id)) {
+    return new Response(JSON.stringify({ error: '无效的 ID' }), { 
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
+
+  return TodoController.updateTodo(request, id, session.user.id)
+}
+
+/**
+ * DELETE /api/todos/:id - 删除 Todo
+ */
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user?.id) {
+    return new Response(JSON.stringify({ error: '未登录' }), { 
+      status: 401,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
+
+  const id = parseInt(params.id)
+  if (isNaN(id)) {
+    return new Response(JSON.stringify({ error: '无效的 ID' }), { 
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
+
+  return TodoController.deleteTodo(id, session.user.id)
 }

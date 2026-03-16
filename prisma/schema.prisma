@@ -43,6 +43,7 @@ model User {
   todos         Todo[]
   accounts      Account[]
   sessions      Session[]
+  resetTokens   PasswordResetToken[]
 }
 
 model VerificationToken {
@@ -51,6 +52,18 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@unique([email, token])
 }
 
 model Todo {

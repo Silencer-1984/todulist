@@ -163,11 +163,12 @@ export default function RegisterPage() {
       <div
         style={{
           flex: 1,
-          display: { xs: 'none', md: 'flex' } as any,
+          display: 'flex',
           background: 'linear-gradient(135deg, #FDF8F3 0%, #F5E6D3 100%)',
           alignItems: 'center',
           justifyContent: 'center',
         }}
+        className="hidden md:flex"
       >
         <div style={{ textAlign: 'center', maxWidth: 500 }}>
           <div

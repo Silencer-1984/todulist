@@ -162,7 +162,7 @@ export default function LoginPage() {
               >
                 <Checkbox style={{ color: '#666666' }}>记住我</Checkbox>
                 <Link
-                  href="#"
+                  href="/forgot-password"
                   style={{ color: '#DC4C3E', fontWeight: 500 }}
                 >
                   忘记密码？
@@ -225,12 +225,13 @@ export default function LoginPage() {
       <div
         style={{
           flex: 1,
-          display: { xs: 'none', md: 'flex' } as any,
+          display: 'flex',
           background: 'linear-gradient(135deg, #FDF8F3 0%, #F5E6D3 100%)',
           alignItems: 'center',
           justifyContent: 'center',
           padding: '40px',
         }}
+        className="hidden md:flex"
       >
         <div style={{ textAlign: 'center', maxWidth: 500 }}>
           {/* Decorative Illustration */}
